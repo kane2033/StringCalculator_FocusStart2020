@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">String Calculator</string>
+    <string name="calculateButton">Count</string>
+    <string name="result_text">Result</string>
+    <string name="input_string">Input here</string>
+    <string name="calculate_exc_errtxt">Input string is incorrect.</string>
+    <string name="regex_check_err">String can only contain numbers, brackets and these operators: \'+\', \'-\', \'*\', \'/\'.</string>
+</resources>
