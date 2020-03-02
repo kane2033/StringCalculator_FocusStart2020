@@ -5,4 +5,17 @@
     <string name="input_string">Input here</string>
     <string name="calculate_exc_errtxt">Input string is incorrect.</string>
     <string name="regex_check_err">String can only contain numbers, brackets and these operators: \'+\', \'-\', \'*\', \'/\'.</string>
+    <string name="help_info"><![CDATA[<h1>This is a string calculator made as a test task for FocusStart courses.</h1>
+    <h5>(English localization was made for education purposes. App language depends on system language.)</h5>
+        Here are the features: <br />
+        <p>
+            • Binary functions: +, -, *, / ; <br />
+            • Unary function: - ; <br />
+            • Arbitrary brackets nesting; <br />
+            • If the input string has errors, corresponding error message will be displayed; <br />
+        </p>
+        App made by Maltsev Michail. <br />
+        E-mail: maltsevmicyou@gmail.com]]>
+    </string>
+    <string name="operands_lack_err">String is incorrect: not enough operands for every operation.</string>
 </resources>

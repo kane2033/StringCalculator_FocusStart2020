@@ -2,24 +2,14 @@ package com.example.calculator;
 
 import java.util.Stack;
 
+//класс для подсчета мат. выражения:
+//переводит в постфиксную форму и считает параллельно
 public class ReversePolishNotation {
 
-    /*
-    public static void main(String[] args) {
-        System.out.println("кукулятор");
-        //String str = "(46+-10-4)/(1+11*2)+13";
-        //String str = "26/5*22.3";
-        String str = "(26";
-        System.out.println(str);
-        System.out.println("Результат: " + ConvertAndCountRPN(str));
-    }
-    */
-
-
-
-    //можно сделать класс операторов??
+    //допустимые операторы
     private char[] operators = {'+', '-', '*', '/', '(', ')'};
 
+    //проверка символа на оператор
     private Boolean isOperator(char t) {
         for (int i:operators) {
             if (i == t)
@@ -28,13 +18,17 @@ public class ReversePolishNotation {
         return false;
     }
 
+    //возвращает приоритет операции:
+    //+, - : 1
+    //*, / : 2
     private int Priority(char t) {
         return (t == '+' || t == '-') ? 1 :
                 (t == '*' || t == '/') ? 2 : -1;
     }
 
-    private double Calculate(double b, double a, char op) {
-        switch (op) {
+    //метод подсчета в зависимости от операции
+    private double Calculate(double b, double a, char operation) {
+        switch (operation) {
             case ('+'):
                 return a + b;
             case ('-'):
@@ -48,58 +42,62 @@ public class ReversePolishNotation {
         }
     }
 
-    //тут предполагается, что строка уже проверена на отсутсвие
-    //всяких лишних вещей
-    //строка - в правильном виде
+    //метод подсчета мат. выражения, возвращает результат
     public double CountString (String str) {
-        char[] arr = str.toCharArray();
-        Stack<Double> out = new Stack<Double>(); //числа
-        Stack<Character> oper = new Stack<Character>(); //операторы
-        String numbuff = ""; //временная строка для числа
-        Boolean isUnary = false;
 
-        for (int i = 0; i < arr.length; i++) {
-            //вставка числа в стек
-            if (!isOperator(arr[i])) {
-                while (i < arr.length  && !isOperator(arr[i])) {
-                    numbuff += arr[i];
+        char[] array = str.toCharArray();
+        String numbuff = ""; //временная строка для числа
+        boolean isUnary = false; //флаг для проверки унарности операции
+
+        Stack<Double> numbersStack = new Stack<>(); //стек чисел
+        Stack<Character> operationsStack = new Stack<>(); //стек операторов
+
+        for (int i = 0; i < array.length; i++) {
+            //если символ не оператор, то это число
+            if (!isOperator(array[i])) {
+                while (i < array.length  && !isOperator(array[i])) {
+                    numbuff += array[i]; //число забивается в строку по одному символу
                     i++;
                 }
                 i--;
                 //если дробные числа записаны через запятую:
                 numbuff = numbuff.replace(',', '.');
-                if (isUnary)
-                    out.push(-Double.parseDouble(numbuff));
-                else out.push(Double.parseDouble(numbuff));
+                if (isUnary) //если предыдущий символ был унарным минусом
+                    numbersStack.push(-Double.parseDouble(numbuff)); //вставка в стек с отриц. знаком
+                else numbersStack.push(Double.parseDouble(numbuff)); //вставка в стек
                 numbuff = "";
             }
-            //вставка операнда в стек
+            //вставка оператора в стек
             else {
-                int stackPriority;
-                if (oper.isEmpty())
-                    stackPriority = -1;
-                else stackPriority = Priority(oper.peek());
+                int stackPriority; //приоритет операции в стеке
+                if (operationsStack.isEmpty())
+                    stackPriority = -1; //если операторов в стеке нет
+                else stackPriority = Priority(operationsStack.peek());
 
-                if (arr[i] == '(') {
-                    oper.push(arr[i]);
+                if (array[i] == '(') { //открывающая скобка всегда идет в стек
+                    operationsStack.push(array[i]);
                 }
                 else {
-                    if (arr[i] == ')') {
-                        char op = oper.pop();
+                    if (array[i] == ')') { //подсчет всех операций в стеке до открывающей скобки
+                        char op = operationsStack.pop();
                         while (op != '(') {
-                            out.push(Calculate(out.pop(), out.pop(), op));
-                            op = oper.pop();
+                            numbersStack.push(Calculate(numbersStack.pop(), numbersStack.pop(), op));
+                            op = operationsStack.pop();
                         }
                     }
                     else {
-                        if (arr[i] == '-' && (i == 0 || isOperator(arr[i - 1])))
-                            isUnary = true;
+                        if (array[i] == '-' && (i == 0 || isOperator(array[i - 1])))
+                            isUnary = true; //оператор унарный, если предыдущий символ это оператор
                         else {
-                            if (Priority(arr[i]) > stackPriority) {
-                                oper.push(arr[i]);
+                            //если приоритет проверяемой операции
+                            // выше приоритета последней операции из стека
+                            if (Priority(array[i]) > stackPriority) {
+                                operationsStack.push(array[i]);
                             }
-                            else { // <= priority
-                                out.push(Calculate(out.pop(), out.pop(), oper.pop()));
+                            else {
+                                // если приоритет меньше или равен, подсчет
+                                // последних двух чисел из стека и операции из стека
+                                numbersStack.push(Calculate(numbersStack.pop(), numbersStack.pop(), operationsStack.pop()));
                                 i--;
                             }
                         }
@@ -108,18 +106,11 @@ public class ReversePolishNotation {
             }
         }
 
-        //досчитываем элементы из стека
-        while (!oper.isEmpty()) {
-            out.push(Calculate(out.pop(), out.pop(), oper.pop()));
+        //досчитываем оставшиеся элементы из стека
+        while (!operationsStack.isEmpty()) {
+            numbersStack.push(Calculate(numbersStack.pop(), numbersStack.pop(), operationsStack.pop()));
         }
-        return out.pop();
 
-//        try {
-//
-//        }
-//        catch (Throwable t) {
-//            //System.out.println("А вот и эксепшн подъехал! " + t);
-//            return 0.0;
-//        }
+        return numbersStack.pop(); //возвращает результат
     }
 }
